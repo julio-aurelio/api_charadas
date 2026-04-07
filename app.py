@@ -7,10 +7,17 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 import json
+from flasgger import Swagger
+
 
 load_dotenv()
 
 app = Flask(__name__)
+#versão do openapi
+app.config['SWAGGER'] = {
+    'openapi':'3.0.0'
+}
+swagger = Swagger(app, template_file='openapi.yaml')
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 CORS(app, origins="*") #Funciona sem o origins, dentro das "você coloca o link do dominio"
 
@@ -219,7 +226,6 @@ def erro404(error):
 @app.errorhandler(500)
 def erro500(error):
     return jsonify({"error":"Servidor interno com falhas. Tente mais tarde"}), 500
-
 
 
 if __name__ == "__main__":
