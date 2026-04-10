@@ -121,16 +121,21 @@ def post_charadas():
         return jsonify({"error":"Dados inválidos ou incompletos!"}), 400
     
     try:
-        # Busca pelo contador
+        # 🔥 AQUI entra o código novo
         contador_ref = db.collection("contador").document("controle_id")
         contador_doc = contador_ref.get()
-        ultimo_id = contador_doc.to_dict().get("ultimo_id")
-        # Somar 1 ao ultimo id
+
+        if not contador_doc.exists:
+            contador_ref.set({"ultimo_id": 0})
+            ultimo_id = 0
+        else:
+            ultimo_id = contador_doc.to_dict().get("ultimo_id", 0)
+
+        # continua normal
         novo_id = ultimo_id + 1
-        # Atualizar o id do contador
+
         contador_ref.update({"ultimo_id": novo_id})
 
-        # Cadastrar a nova charada
         db.collection("charadas").add({
             "id": novo_id,
             "pergunta": dados["pergunta"],
@@ -138,8 +143,12 @@ def post_charadas():
         })
 
         return jsonify({"message":"Charada criada com sucesso!"}), 201
-    except:
-        return jsonify({"error":"Falha no envio da charada"}), 400
+
+    except Exception as e:
+        print("ERRO REAL:", e)
+        return jsonify({
+            "error": "Falha no envio da charada",
+        }), 400
 
 # Rota 5 - Método PUT - Alteração total
 @app.route("/charadas/<int:id>", methods=['PUT'])
